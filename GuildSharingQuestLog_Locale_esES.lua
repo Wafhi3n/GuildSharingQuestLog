@@ -12,5 +12,8 @@ local T = {
     ["version %s"]                    = "versión %s",
     ["Commandes :"]                   = "Comandos:",
     ["affiche la version"]            = "muestra la versión",
+    ["partage de mes quêtes avec la guilde"]            = "compartir mis misiones con la hermandad",
+    ["Partage de mes quêtes avec la guilde : activé."] = "Compartir mis misiones con la hermandad: activado.",
+    ["Partage de mes quêtes avec la guilde : coupé."]  = "Compartir mis misiones con la hermandad: desactivado.",
 }
 for k, v in pairs(T) do NS.L[k] = v end

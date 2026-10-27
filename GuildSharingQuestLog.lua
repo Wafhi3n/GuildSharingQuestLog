@@ -13,6 +13,8 @@ _G.GuildSharingQuestLog = NS
 -- schemaVer sert le jour où une migration de la base devient nécessaire.
 NS.DEFAULTS = {
     schemaVer = 1,
+    share = true,   -- partager mes quêtes avec la guilde (P3 : actif à l'installation)
+    known = {},     -- [« Nom-Royaume »] = { [questID] = true } : mes quêtes, d'une session à l'autre
 }
 
 local function CopyDefaults(dst, src)
@@ -34,12 +36,29 @@ function NS:Printf(fmt, ...)
     self:Print(string.format(fmt, ...))
 end
 
+-- `/gsql share` montre l'état ; seuls `on` et `off` le changent (skill publique `chat-output`).
+function NS:Share(arg)
+    if arg == "on" or arg == "off" then
+        local share = arg == "on"
+        if self.db.share ~= share then
+            self.db.share = share
+            if self.sync then self.sync:SharingChanged() end
+        end
+    end
+    self:Print(self.db.share and L["Partage de mes quêtes avec la guilde : activé."]
+        or L["Partage de mes quêtes avec la guilde : coupé."])
+end
+
 function NS:Slash(msg)
-    local cmd = ((msg or ""):match("^%s*(%S*)") or ""):lower()
+    local cmd, arg = (msg or ""):match("^%s*(%S*)%s*(%S*)")
+    cmd, arg = (cmd or ""):lower(), (arg or ""):lower()
     if cmd == "version" then
         self:Printf(L["version %s"], self.VERSION)
+    elseif cmd == "share" then
+        self:Share(arg)
     else
         self:Print(L["Commandes :"])
+        self:Print("/gsql share [on|off] - " .. L["partage de mes quêtes avec la guilde"])
         self:Print("/gsql version - " .. L["affiche la version"])
     end
 end

@@ -1,4 +1,4 @@
-## Interface: 16001
+## Interface: 16001, 120107
 ## Title: Discord Guild Sharing Quest Log
 ## Notes: Discord Guild Sharing Quest Log - /gsql
 ## Author: Wafhien
@@ -6,6 +6,9 @@
 ## SavedVariables: GuildSharingQuestLogDB
 
 # Genere par scripts\new_addon.ps1 le 2026-10-27 - client vise : forever.
+# 120107 = PTR de Retail 12.1.7 : pour l'eprouver sur le PTR avant le lancement de Forever
+# (deploy.ps1 retailptr), comme World PvP Police. Numero lu en jeu le 2026-10-27. A retirer apres
+# le lancement si le user le dit.
 # Un .lua ajoute ici : sur Forever, /reload suffit (mesure le 2026-09-26) ; sur l'Era il fallait
 # relancer le client. Un addon TOUT NEUF dans le dossier demande toujours de relancer le client.
 
@@ -21,3 +24,9 @@ GuildSharingQuestLog.lua
 # Le message d'addon de guilde (format lu hors de l'addon) et qui a quelle quête : logique pure.
 GuildSharingQuestLog_Wire.lua
 GuildSharingQuestLog_Roster.lua
+
+# Le partage en jeu : mes quetes lues dans le journal, quand envoyer et a qui (logique pure), puis le
+# branchement sur les evenements du jeu.
+GuildSharingQuestLog_Journal.lua
+GuildSharingQuestLog_Sync.lua
+GuildSharingQuestLog_Events.lua

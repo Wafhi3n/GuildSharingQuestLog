@@ -98,6 +98,24 @@ function Roster:QuestsOf(sender)
     return out
 end
 
+-- Tous les persos dont on sait quelque chose (liste, même vide, ou morceaux en attente).
+function Roster:Known()
+    local seen, out = {}, {}
+    for who in pairs(self.lists) do seen[who] = true end
+    for who in pairs(self.pending) do seen[who] = true end
+    for who in pairs(seen) do out[#out + 1] = who end
+    table.sort(out)
+    return out
+end
+
+-- Quand on a reçu quelque chose de ce perso pour la dernière fois (secondes), ou nil.
+function Roster:LastSeen(sender)
+    local l, p = self.lists[sender], self.pending[sender]
+    local a, b = l and l.at, p and p.at
+    if a and b then return math.max(a, b) end
+    return a or b
+end
+
 -- Les persos qui ont au moins une quête, triés par nom.
 function Roster:Senders()
     local out = {}

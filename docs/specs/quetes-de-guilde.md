@@ -1,7 +1,8 @@
 # Quêtes de guilde : qui a la même quête que moi
 
-> État : **validée en partie** le 2026-10-27 · T1 codé (le contrat et qui a quelle quête, logique
-> pure, en test) ; rien n'est encore appelé en jeu. L'idée (D1) et le nom (D2) sont du
+> État : **validée en partie** le 2026-10-27 · T1 et T2 codés (le contrat, qui a quelle quête, le
+> partage en jeu, en test) ; rien n'est encore VU en jeu, rien n'est encore affiché (T3). P7
+> (expiration) est mis en œuvre par T2 tel que proposé. L'idée (D1) et le nom (D2) sont du
 > user ; P1, P2, P3, P6 et P9 sont des propositions de l'agent acceptées par le user (« oui vas-y » à
 > la liste des recommandations) ; P4 (liste complète), P5 (numéros, pas titres), le `seq` parti de
 > l'horloge et le sens de `H1`, adoptés par T1, **acceptés par le user le 2026-10-27** (« oui
@@ -147,6 +148,12 @@ Outil : DevMacro, branche `test/ptr-quetes` (commandes n°1 à n°6), sorties re
   envoie et reçoit aussitôt.
 - Les fonctions dont la spec a besoin ont la **même documentation** sur ce PTR et sur Forever 70532
   (journal de quêtes, messages d'addon, Discord).
+- **Catégorie repliée** (18:58, Paladingue) : replier « Forêt d'Elwynn », qui contient deux de ses
+  quêtes, n'a rien caché à `C_QuestLog.GetInfo` (6 quêtes vues et 19 entrées, avant comme après).
+  Le code de Forever, lui, déplie les catégories avant de chercher (M8).
+- **Liste de guilde** (18:58, Paladingue et Jjoajao) : `GetGuildRosterInfo` rend 17 valeurs ; le nom
+  est `Nom-Royaume` même sur son propre royaume, le 9e champ dit « en ligne », le 14e (appli mobile)
+  vaut `false` pour tous les connectés.
 
 ### À faire sur Forever (banc, après le 2026-11-04)
 
@@ -163,6 +170,10 @@ Les commandes DevMacro de `test/ptr-quetes` resservent telles quelles (le `.toc`
 - **M6** — Forever a-t-il des entrées cachées ou spéciales dans le journal ?
 - **M7** (phase 2) — Une ligne supprimée par le bot laisse-t-elle une notification ou une pastille
   « non lu » chez les autres membres du Discord ?
+- **M8** — Une catégorie repliée cache-t-elle ses quêtes à `C_QuestLog.GetInfo` sur Forever (pas sur
+  le PTR) ? Si oui, `IsOnQuest` les voit-il encore ? (DevMacro n°7 : un passage tout déplié, puis un
+  passage avec une catégorie repliée.) T2 ne fait sortir une quête que sur preuve, quelle que soit la
+  réponse.
 
 ## Critères d'acceptation (phase 1)
 
@@ -211,9 +222,13 @@ d'addon. Code : `GuildSharingQuestLog_Wire.lua` ; exemples figés octet pour oct
   - Les numéros : entiers de 1 à 9 chiffres, sans zéro en tête, **triés, sans doublon** (la même
     liste donne toujours le même message, quel que soit l'ordre du journal).
   - Liste vide : `L1|<seq>|1/1|`, permise seulement en un morceau.
-- **Demande** : `H1`, exactement. Sens : « je (re)démarre ». Ceux qui la reçoivent **oublient tout de
-  l'envoyeur, numéro compris** (sa liste suivante fait foi, même si son horloge a reculé), puis lui
-  envoient leur liste.
+- **Demande** : `H1`, exactement, **par la guilde seulement**. Sens : « je (re)démarre ». Ceux qui la
+  reçoivent **oublient tout de l'envoyeur, numéro compris** (sa liste suivante fait foi, même si son
+  horloge a reculé), puis lui **chuchotent** leur liste (précisé à T2 : une réponse par la guilde
+  ferait, à chaque connexion, une réponse de chacun à tous). Un `H1` chuchoté est ignoré : un inconnu
+  ne doit pas recevoir nos listes.
+- Une liste se reçoit par la guilde, ou en chuchoté dans la minute qui suit mon propre `H1` (les
+  réponses à ma demande) ; jamais autrement.
 - Tout le reste est ignoré sans erreur : une autre version (`L2`, `H2`), un champ en plus ou en
   moins, une virgule de trop, un numéro mal écrit, un morceau hors de son total.
 
@@ -236,7 +251,9 @@ H1
 
 ### Données sauvegardées
 
-Les réglages seulement (partage actif ou non). Rien de ce qui est reçu.
+`GuildSharingQuestLogDB` (base du compte) : `share` (partage actif, `true` par défaut) et `known`
+(`[« Nom-Royaume »] = { [questID] = true }` : mes propres quêtes, pour ne pas les perdre si une
+catégorie repliée les cache au démarrage). Rien de ce qui est reçu des autres.
 
 ### Ligne Discord (phase 2, esquisse à figer avec la spec du bot)
 
@@ -259,15 +276,14 @@ Le nom du perso et les numéros des quêtes, sur une seule ligne : `QST <Perso> 
 - ~~**T1**~~ — Fait le 2026-10-27, branches `feat/gsql-contrat` de l'addon et de l'outillage : le
   contrat (`_Wire.lua`), qui a quelle quête (`_Roster.lua`), critères 1 et 2 tenus en test
   (`test_gsql_wire.lua`, `test_gsql_roster.lua`). Rien n'est encore appelé en jeu.
-- **T2** — Lecture du journal, envoi regroupé, demande et réponse, expiration (critères 3 à 6).
-  Notes laissées par T1 :
-  - `Roster` range tout envoyeur, **moi compris** : écarter mon propre écho (et s'en servir pour P8)
-    AVANT `Receive`, sinon je deviens mon propre guildien sur mes quêtes ;
-  - répondre à un `H1` par **chuchoté** à celui qui le demande (mesuré sur le PTR : le chuchoté
-    d'addon arrive, même forme de nom), pas par la guilde : sinon chaque connexion du soir du
-    lancement déclenche une réponse de chaque guildien à toute la guilde ;
-  - pour l'essayer sur le PTR avant le 4/11, ajouter `120107` à la ligne `## Interface` du `.toc`
-    (comme World PvP Police).
+- ~~**T2**~~ — Fait le 2026-10-27, branches `feat/gsql-sync` (sur `feat/gsql-contrat`) de l'addon et
+  de l'outillage : `_Journal.lua` (une quête ne sort que sur preuve ; rien n'est purgé avant le
+  premier `QUEST_LOG_UPDATE`), `_Sync.lua` (logique : regroupement 3 s ; réponse chuchotée à un `H1`
+  après 1 à 5 s tirées au hasard, une par perso et par minute ; oubli des déconnectés, sauf liste
+  reçue il y a moins de 2 min ; une seule file à un message par seconde, en pause pendant le verrou,
+  5 essais), `_Events.lua` (le branchement), `/gsql share [on|off]`, `120107` au `.toc` pour le PTR.
+  Critères 3 à 6 tenus en test (`test_gsql_journal.lua`, `test_gsql_sync.lua`). Mon écho est noté,
+  rien de plus (P8 pas discuté). Rien n'est encore vu en jeu.
 - **T3** — L'affichage en jeu (critères 8 à 11).
 - **T4** — Banc Forever : M1 à M6, puis les critères 8 à 11.
 - **T5** — Phase 2 : spec du bot, ligne Discord, file au geste.
