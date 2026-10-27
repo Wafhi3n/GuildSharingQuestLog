@@ -17,3 +17,7 @@ GuildSharingQuestLog_Locale_esES.lua
 
 # Socle : table d'addon, SavedVariables, commande /gsql.
 GuildSharingQuestLog.lua
+
+# Le message d'addon de guilde (format lu hors de l'addon) et qui a quelle quête : logique pure.
+GuildSharingQuestLog_Wire.lua
+GuildSharingQuestLog_Roster.lua

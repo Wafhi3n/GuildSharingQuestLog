@@ -1,6 +1,7 @@
 # Quêtes de guilde : qui a la même quête que moi
 
-> État : **validée en partie** le 2026-10-27 · Rien n'est codé. L'idée (D1) et le nom (D2) sont du
+> État : **validée en partie** le 2026-10-27 · T1 codé (le contrat et qui a quelle quête, logique
+> pure, en test) ; rien n'est encore appelé en jeu. L'idée (D1) et le nom (D2) sont du
 > user ; P1, P2, P3, P6 et P9 sont des propositions de l'agent acceptées par le user (« oui vas-y » à
 > la liste des recommandations) ; P4, P5, P7 et P8 sont des choix techniques de l'agent, pas encore
 > discutés. Addon `GuildSharingQuestLog`, créé le 2026-10-27 (`scripts\new_addon.ps1`) ; spec écrite
@@ -184,19 +185,46 @@ Les commandes DevMacro de `test/ptr-quetes` resservent telles quelles (le `.toc`
 
 Les critères de la phase 2 s'écriront avec la spec du bot.
 
-## Contrat (proposé, se fige à T1)
+## Contrat (figé à T1, le 2026-10-27, avant toute release)
 
 ### Message d'addon de guilde, version 1
 
-Préfixe : `GSQL` (proposé, d'après la commande ; 16 caractères au plus). Séparateur `|`, comme COC et
-CraftLink, qui l'utilisent déjà dans leurs messages d'addon.
+Préfixe : `GSQL`. Séparateur `|`, comme COC et CraftLink, qui l'utilisent déjà dans leurs messages
+d'addon. Code : `GuildSharingQuestLog_Wire.lua` ; exemples figés octet pour octet par
+`tests/test_gsql_wire.lua` (outillage).
 
-- Liste : `L1|<seq>|<morceau>/<total>|<id>,<id>,…`
-  - `seq` : compteur du perso, qui monte à chaque nouvelle liste (une liste plus vieille est ignorée) ;
-  - `morceau/total` : `1/1` presque toujours ; plusieurs morceaux seulement au-delà de 255 octets ;
-  - liste vide : `L1|<seq>|1/1|`.
-- Demande : `H1`. Chacun y répond par sa liste.
-- Un verbe inconnu ou d'une autre version est ignoré sans erreur.
+- **Liste** : `L1|<seq>|<morceau>/<total>|<id>,<id>,…`
+  - `seq` : entier de 1 à 12 chiffres, sans zéro en tête, qui monte à chaque nouvelle liste du perso.
+    Il part de l'horloge (secondes) : après un `/reload`, qui efface le compteur, la liste suivante
+    passe encore devant les anciennes. Une liste qui renvoie la même liste garde le même `seq`.
+  - `morceau/total` : un chiffre chacun, `1/1` presque toujours ; 9 morceaux au plus. Chaque morceau
+    fait 255 octets au plus et se lit seul (un numéro n'est jamais coupé). Au-delà de 9 morceaux (plus
+    de 200 quêtes), les plus grands numéros restent dehors.
+  - Les numéros : entiers de 1 à 9 chiffres, sans zéro en tête, **triés, sans doublon** (la même
+    liste donne toujours le même message, quel que soit l'ordre du journal).
+  - Liste vide : `L1|<seq>|1/1|`, permise seulement en un morceau.
+- **Demande** : `H1`, exactement. Sens : « je (re)démarre ». Ceux qui la reçoivent **oublient tout de
+  l'envoyeur, numéro compris** (sa liste suivante fait foi, même si son horloge a reculé), puis lui
+  envoient leur liste.
+- Tout le reste est ignoré sans erreur : une autre version (`L2`, `H2`), un champ en plus ou en
+  moins, une virgule de trop, un numéro mal écrit, un morceau hors de son total.
+
+Exemples (la vraie liste de Paladingue, relevée sur le PTR) :
+
+```
+L1|1761580800|1/1|60,62,26378,76107,91281,93057
+L1|1761580860|1/1|
+H1
+```
+
+### Ce que le receveur en fait (critère 2, `GuildSharingQuestLog_Roster.lua`)
+
+- Une liste **complète** remplace la précédente du même perso. Un `seq` plus petit ou égal à celui
+  déjà reçu est ignoré (l'écho de sa propre liste aussi).
+- Une liste en morceaux ne compte qu'une fois tous ses morceaux arrivés, dans n'importe quel ordre ;
+  jusque-là, l'ancienne reste. Des morceaux en attente depuis plus de **30 s** sont jetés ; un même
+  `seq` avec un autre `total` recommence l'assemblage.
+- Une liste vide efface le perso, mais son `seq` reste : une liste plus vieille ne le ressuscite pas.
 
 ### Données sauvegardées
 
@@ -219,8 +247,10 @@ Le nom du perso et les numéros des quêtes, sur une seule ligne : `QST <Perso> 
 ## Plan (2026-10-27) — volatile, meurt quand c'est fait
 
 - ~~**T0**~~ — Fait le 2026-10-27 : nom choisi, addon déclaré (outillage `4d6e504`) et créé
-  (`de9b229`), spec déplacée ici. Pas de dépôt GitHub (au mot du user).
-- **T1** — Le contrat et ses tests (critères 1 et 2).
+  (`de9b229`), spec déplacée ici ; dépôt GitHub privé `Wafhi3n/GuildSharingQuestLog` (au mot du user).
+- ~~**T1**~~ — Fait le 2026-10-27, branches `feat/gsql-contrat` de l'addon et de l'outillage : le
+  contrat (`_Wire.lua`), qui a quelle quête (`_Roster.lua`), critères 1 et 2 tenus en test
+  (`test_gsql_wire.lua`, `test_gsql_roster.lua`). Rien n'est encore appelé en jeu.
 - **T2** — Lecture du journal, envoi regroupé, demande et réponse, expiration (critères 3 à 6).
 - **T3** — L'affichage en jeu (critères 8 à 11).
 - **T4** — Banc Forever : M1 à M6, puis les critères 8 à 11.
