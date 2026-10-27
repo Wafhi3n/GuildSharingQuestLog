@@ -1,0 +1,8 @@
+package-as: GuildSharingQuestLog
+ignore:
+  - CURSEFORGE.md
+  - .gitignore
+  - .gitattributes
+  - .pkgmeta
+  - docs
+  - tools
