@@ -3,8 +3,9 @@
 > État : **validée en partie** le 2026-10-27 · T1 codé (le contrat et qui a quelle quête, logique
 > pure, en test) ; rien n'est encore appelé en jeu. L'idée (D1) et le nom (D2) sont du
 > user ; P1, P2, P3, P6 et P9 sont des propositions de l'agent acceptées par le user (« oui vas-y » à
-> la liste des recommandations) ; P4, P5, P7 et P8 sont des choix techniques de l'agent, pas encore
-> discutés. Addon `GuildSharingQuestLog`, créé le 2026-10-27 (`scripts\new_addon.ps1`) ; spec écrite
+> la liste des recommandations) ; P4 (liste complète) et P5 (numéros, pas titres) sont **adoptés
+> par T1 et attendent le oui du user**, comme le `seq` parti de l'horloge et le sens de `H1` ; P7 et
+> P8 ne sont pas encore discutés. Addon `GuildSharingQuestLog`, créé le 2026-10-27 (`scripts\new_addon.ps1`) ; spec écrite
 > d'abord dans l'outillage, puis déplacée ici le même jour.
 > Mesures : une séance sur le **PTR de Retail** 12.1.7.70493 le 2026-10-27, faute de Forever (fermé
 > jusqu'au 2026-11-04). Rien n'est mesuré sur Forever ; la liste de ce qui reste est plus bas.
@@ -86,7 +87,8 @@ bot lit le salon relié (`F:\CraftingOrderBot`).
 
 ### Propositions de l'agent
 
-Acceptées par le user le 2026-10-27 : **P1, P2, P3, P6, P9**. Pas encore discutées : P4, P5, P7, P8.
+Acceptées par le user le 2026-10-27 : **P1, P2, P3, P6, P9**. Adoptées par T1, en attente du oui du
+user : **P4, P5**. Pas encore discutées : P7, P8.
 
 - **P1** — **Deux phases.** Phase 1 en jeu seulement, par messages d'addon de guilde : ils partent
   sans geste, et touchent tous les guildiens en jeu, même sans Discord. Phase 2, le tableau Discord.
@@ -185,7 +187,11 @@ Les commandes DevMacro de `test/ptr-quetes` resservent telles quelles (le `.toc`
 
 Les critères de la phase 2 s'écriront avec la spec du bot.
 
-## Contrat (figé à T1, le 2026-10-27, avant toute release)
+## Contrat (écrit à T1 le 2026-10-27 ; figé sous réserve du oui du user sur P4, P5, `seq` et `H1`)
+
+Avant toute release, il peut encore changer. Après, toute évolution passe par une **nouvelle
+version** (`L2`, envoyée à côté de `L1` tant que des copies v1 tournent) : on n'ajoute jamais de
+champ à `L1`, le lecteur v1 refuse une ligne qui en a un de plus.
 
 ### Message d'addon de guilde, version 1
 
@@ -195,8 +201,10 @@ d'addon. Code : `GuildSharingQuestLog_Wire.lua` ; exemples figés octet pour oct
 
 - **Liste** : `L1|<seq>|<morceau>/<total>|<id>,<id>,…`
   - `seq` : entier de 1 à 12 chiffres, sans zéro en tête, qui monte à chaque nouvelle liste du perso.
-    Il part de l'horloge (secondes) : après un `/reload`, qui efface le compteur, la liste suivante
-    passe encore devant les anciennes. Une liste qui renvoie la même liste garde le même `seq`.
+    **Règle de l'envoyeur : `seq = max(time(), dernier seq + 1)`.** L'horloge fait qu'après un
+    `/reload`, qui efface le compteur, la liste suivante passe encore devant les anciennes ; le `+ 1`
+    fait que deux listes différentes dans la même seconde n'ont pas le même `seq` (le receveur
+    ignorerait la seconde sans pouvoir le voir). Renvoyer la même liste garde le même `seq`.
   - `morceau/total` : un chiffre chacun, `1/1` presque toujours ; 9 morceaux au plus. Chaque morceau
     fait 255 octets au plus et se lit seul (un numéro n'est jamais coupé). Au-delà de 9 morceaux (plus
     de 200 quêtes), les plus grands numéros restent dehors.
@@ -252,6 +260,14 @@ Le nom du perso et les numéros des quêtes, sur une seule ligne : `QST <Perso> 
   contrat (`_Wire.lua`), qui a quelle quête (`_Roster.lua`), critères 1 et 2 tenus en test
   (`test_gsql_wire.lua`, `test_gsql_roster.lua`). Rien n'est encore appelé en jeu.
 - **T2** — Lecture du journal, envoi regroupé, demande et réponse, expiration (critères 3 à 6).
+  Notes laissées par T1 :
+  - `Roster` range tout envoyeur, **moi compris** : écarter mon propre écho (et s'en servir pour P8)
+    AVANT `Receive`, sinon je deviens mon propre guildien sur mes quêtes ;
+  - répondre à un `H1` par **chuchoté** à celui qui le demande (mesuré sur le PTR : le chuchoté
+    d'addon arrive, même forme de nom), pas par la guilde : sinon chaque connexion du soir du
+    lancement déclenche une réponse de chaque guildien à toute la guilde ;
+  - pour l'essayer sur le PTR avant le 4/11, ajouter `120107` à la ligne `## Interface` du `.toc`
+    (comme World PvP Police).
 - **T3** — L'affichage en jeu (critères 8 à 11).
 - **T4** — Banc Forever : M1 à M6, puis les critères 8 à 11.
 - **T5** — Phase 2 : spec du bot, ligne Discord, file au geste.
