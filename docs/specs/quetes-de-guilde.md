@@ -3,9 +3,9 @@
 > État : **validée en partie** le 2026-10-27 · T1 codé (le contrat et qui a quelle quête, logique
 > pure, en test) ; rien n'est encore appelé en jeu. L'idée (D1) et le nom (D2) sont du
 > user ; P1, P2, P3, P6 et P9 sont des propositions de l'agent acceptées par le user (« oui vas-y » à
-> la liste des recommandations) ; P4 (liste complète) et P5 (numéros, pas titres) sont **adoptés
-> par T1 et attendent le oui du user**, comme le `seq` parti de l'horloge et le sens de `H1` ; P7 et
-> P8 ne sont pas encore discutés. Addon `GuildSharingQuestLog`, créé le 2026-10-27 (`scripts\new_addon.ps1`) ; spec écrite
+> la liste des recommandations) ; P4 (liste complète), P5 (numéros, pas titres), le `seq` parti de
+> l'horloge et le sens de `H1`, adoptés par T1, **acceptés par le user le 2026-10-27** (« oui
+> vas-y ») ; P7 et P8 ne sont pas encore discutés. Addon `GuildSharingQuestLog`, créé le 2026-10-27 (`scripts\new_addon.ps1`) ; spec écrite
 > d'abord dans l'outillage, puis déplacée ici le même jour.
 > Mesures : une séance sur le **PTR de Retail** 12.1.7.70493 le 2026-10-27, faute de Forever (fermé
 > jusqu'au 2026-11-04). Rien n'est mesuré sur Forever ; la liste de ce qui reste est plus bas.
@@ -87,8 +87,8 @@ bot lit le salon relié (`F:\CraftingOrderBot`).
 
 ### Propositions de l'agent
 
-Acceptées par le user le 2026-10-27 : **P1, P2, P3, P6, P9**. Adoptées par T1, en attente du oui du
-user : **P4, P5**. Pas encore discutées : P7, P8.
+Acceptées par le user le 2026-10-27 : **P1, P2, P3, P6, P9**, puis **P4, P5** (avec le contrat de
+T1). Pas encore discutées : P7, P8.
 
 - **P1** — **Deux phases.** Phase 1 en jeu seulement, par messages d'addon de guilde : ils partent
   sans geste, et touchent tous les guildiens en jeu, même sans Discord. Phase 2, le tableau Discord.
@@ -187,7 +187,7 @@ Les commandes DevMacro de `test/ptr-quetes` resservent telles quelles (le `.toc`
 
 Les critères de la phase 2 s'écriront avec la spec du bot.
 
-## Contrat (écrit à T1 le 2026-10-27 ; figé sous réserve du oui du user sur P4, P5, `seq` et `H1`)
+## Contrat (écrit à T1 le 2026-10-27, accepté par le user le même jour)
 
 Avant toute release, il peut encore changer. Après, toute évolution passe par une **nouvelle
 version** (`L2`, envoyée à côté de `L1` tant que des copies v1 tournent) : on n'ajoute jamais de
