@@ -30,3 +30,10 @@ GuildSharingQuestLog_Roster.lua
 GuildSharingQuestLog_Journal.lua
 GuildSharingQuestLog_Sync.lua
 GuildSharingQuestLog_Events.lua
+
+# L'affichage : le tableau des quetes en commun (logique pure), puis l'icone de la minicarte et
+# l'onglet du journal de quetes. Le suivi des quetes a l'ecran n'est pas touche.
+GuildSharingQuestLog_Board.lua
+GuildSharingQuestLog_UI.lua
+GuildSharingQuestLog_Indicator.lua
+GuildSharingQuestLog_LogTab.lua

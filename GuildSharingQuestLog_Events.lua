@@ -43,6 +43,11 @@ local function readJournal(loaded)
     return ids
 end
 
+-- Mes quêtes du moment, pour l'affichage (_UI.lua) : la même lecture que celle qui part au réseau.
+function NS.MyQuests()
+    return readJournal(NS.sync and NS.sync.loaded)
+end
+
 local SUCCESS = Enum and Enum.SendAddonMessageResult and Enum.SendAddonMessageResult.Success or 0
 
 local function send(msg, channel, target)
@@ -95,6 +100,7 @@ local handlers = {
     QUEST_LOG_UPDATE = function()
         tryStart()
         NS.sync:LogUpdated()
+        if NS.OnJournalChange then NS.OnJournalChange() end
     end,
     QUEST_ACCEPTED = function(id) if type(id) == "number" then known()[id] = true end end,
     QUEST_REMOVED = function(id) if type(id) == "number" then known()[id] = nil end end,

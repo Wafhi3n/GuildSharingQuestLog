@@ -1,7 +1,7 @@
 # Quêtes de guilde : qui a la même quête que moi
 
-> État : **validée en partie** le 2026-10-27 · T1 et T2 codés (le contrat, qui a quelle quête, le
-> partage en jeu, en test) ; rien n'est encore VU en jeu, rien n'est encore affiché (T3). P7
+> État : **validée en partie** le 2026-10-27 · T1 et T2 codés et vus sur le PTR ; T3 (l'affichage,
+> D3 du 2026-10-28) codé et testé sans le jeu, PAS encore vu au PTR. P7
 > (expiration) est mis en œuvre par T2 tel que proposé. L'idée (D1) et le nom (D2) sont du
 > user ; P1, P2, P3, P6 et P9 sont des propositions de l'agent acceptées par le user (« oui vas-y » à
 > la liste des recommandations) ; P4 (liste complète), P5 (numéros, pas titres), le `seq` parti de
@@ -81,6 +81,20 @@ Personne ne sait qui a quoi, et les guildiens qui ne sont pas en jeu (sur Discor
   le user : la v1 marche en jeu sans Discord, et un dossier qui commence par « Discord » peut
   laisser croire à un addon officiel). Le dossier ne se renomme plus après la première release.
   Commande `/gsql` (choisie par défaut par l'agent, elle peut changer).
+- **D3** (user, 2026-10-28, sur trois propositions de l'agent) — L'affichage, « un peu comme
+  Questie » :
+  - **le suivi des quêtes à l'écran n'est pas touché** ;
+  - une **icône au-dessus de la minicarte**, comme celles de COC (même méthode, mesurée contre le
+    taint ; **rang 10**, COC tient 3 à 5) : allumée quand un guildien connecté a une de mes quêtes,
+    leur nombre dans le coin, la liste au survol, le journal sur l'onglet « Guilde » au clic (hors
+    combat) ;
+  - une **section dans le journal de quêtes** : un **4e onglet « Guilde »** sous Quêtes, Événements
+    et Légende, qui liste les quêtes en commun (précisé par l'agent : le plus partagé d'abord, élites
+    et groupes marqués, un clic ouvre le détail de la quête hors combat) ;
+  - au survol d'une quête du journal, une ligne **« Aussi dans la guilde : … »**.
+  Condition posée par l'agent et acceptée : l'onglet ne reste que si la mesure du taint au PTR est
+  propre ; sinon la même liste passe dans un panneau à nous, ouvert par l'icône.
+  Le panneau à part de P6 est remplacé par cet onglet.
 
 Contexte déjà décidé ailleurs, repris tel quel : la guilde part sur le royaume **PvP**, côté
 **Alliance** ; son Discord est relié au jeu en **flux séparé** (spec `appel-a-l-aide`, D5) ; un seul
@@ -195,6 +209,21 @@ Les commandes DevMacro de `test/ptr-quetes` resservent telles quelles (le `.toc`
 11. [human] Aucun nom affiché ne porte de royaume.
 12. [agent] Revue `api-gotcha-reviewer` : aucune fonction absente de Forever, aucune écriture dans
     les cadres de Blizzard.
+13. [test] L'icône n'existe qu'au premier allumage, dans la barre de la minicarte, au rang 10, avec le
+    nombre de quêtes en commun ; la barre ne se recompose que quand l'icône apparaît ou disparaît ;
+    l'onglet ne pose aucune clé dans `QuestMapFrame` ni dans ses onglets ; en combat, ni l'icône ni
+    une ligne n'ouvrent quoi que ce soit (`test_gsql_ui.lua`, sur un faux journal).
+14. [human] Au PTR, deux persos avec une quête en commun : l'icône s'allume au-dessus de la minicarte
+    avec « 1 », sa bulle nomme la quête et l'autre perso, son clic ouvre le journal sur l'onglet
+    « Guilde ». Témoin : la lettre du courrier, dans la même barre, reste à sa place.
+15. [human] L'onglet « Guilde » se dessine sous la Légende, avec le même aspect que les trois autres ;
+    cliquer un onglet de Blizzard revient à son contenu ; au survol d'une quête partagée dans
+    l'onglet Quêtes, la bulle finit par « Aussi dans la guilde : … ». Témoin : la bulle d'une quête
+    que personne d'autre n'a, inchangée.
+16. [human] `/console taintLog 1`, puis : ouvrir et fermer le journal, passer d'un onglet à l'autre,
+    cliquer l'icône et une ligne, entrer en combat journal ouvert, ouvrir le mode Édition ; ensuite
+    `Logs\taint.log` ne cite pas GuildSharingQuestLog, et aucune « action bloquée ». Témoin : la même
+    séquence addon désactivé.
 
 Les critères de la phase 2 s'écriront avec la spec du bot.
 
@@ -284,6 +313,11 @@ Le nom du perso et les numéros des quêtes, sur une seule ligne : `QST <Perso> 
   5 essais), `_Events.lua` (le branchement), `/gsql share [on|off]`, `120107` au `.toc` pour le PTR.
   Critères 3 à 6 tenus en test (`test_gsql_journal.lua`, `test_gsql_sync.lua`). Mon écho est noté,
   rien de plus (P8 pas discuté). Rien n'est encore vu en jeu.
-- **T3** — L'affichage en jeu (critères 8 à 11).
+- **T3** — Codé le 2026-10-28 (D3), branches `feat/gsql-ui` (sur `feat/gsql-sync`) de l'addon et de
+  l'outillage : `_Board.lua` (le tableau, logique pure), `_UI.lua` (rafraîchissement regroupé, ligne
+  de bulle par l'EventRegistry), `_Indicator.lua` (icône, rang 10, atlas
+  `questlog-questtypeicon-group` que Blizzard utilise sur Forever), `_LogTab.lua` (l'onglet sur
+  `LargeSideTabButtonTemplate`, le panneau par-dessus le contenu du journal). Critères 13 et 11 en
+  test (`test_gsql_board.lua`, `test_gsql_ui.lua`). **Reste : la séance au PTR (critères 14 à 16).**
 - **T4** — Banc Forever : M1 à M6, puis les critères 8 à 11.
 - **T5** — Phase 2 : spec du bot, ligne Discord, file au geste.
